@@ -1,0 +1,18 @@
+---
+title: "HW3 for P8105"
+output: github_document
+---
+
+Loading packages:
+
+```{r}
+library(tidyverse)
+library(patchwork)
+```
+
+
+# Introduction
+
+
+
+
