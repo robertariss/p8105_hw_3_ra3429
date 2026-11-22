@@ -144,3 +144,68 @@ temperature_boxplot + snowfall_boxplot + plot_layout(widths = c(1, 2))
 As expected, Tmax on average is higher than Tmin with a wider IQR. There are outliers in both Tmin and Tmax as seen by the dots on the boxpllots. 
 
 For snowfall, the average snowfall appears to consistently be 25 mm with outliers in 1998 2006 and 2010. This is in context of limiting our data to only display snowfall from 0 to < 100 mm. 
+
+#Problem 2
+
+## Data importa and tidying
+We merge the NHANES covars and accel data followed by excluding subjects < 21 years of age and anyone with missing demographic data. We convert sex and education to factor variables with relevant labeling which is more appropriate.
+```{r}
+nhanes_covar =
+  read.csv("./data/nhanes_covar.csv", skip = 4) |>
+  janitor::clean_names()
+
+nhanes_accel = 
+  read.csv("./data/nhanes_accel.csv") |>
+  janitor::clean_names()
+
+nhanes_df = 
+  nhanes_covar |>
+  left_join(nhanes_accel, by = "seqn") |>
+  filter(age >= 21) |>
+  drop_na(sex, age, bmi, education) |>
+  mutate(
+    sex = 
+      case_match(
+        sex, 
+        1 ~ "male", 
+        2 ~ "female"),
+    sex = as.factor(sex), 
+    education = 
+      case_match (
+        education,
+        1 ~ "Less than high school",
+        2 ~ "High school equivalent",
+        3 ~ "More than high school"),
+    education = as.factor(education)
+  )
+```
+
+## Men and Women in Each Education Group
+
+Here we display the amount of men in each education category and women in each education category
+```{r}
+nhanes_df |>
+  group_by(sex, education) |> 
+  summarize(count = n())
+  
+```
+We see that a majority of females and males had more than a high school education. 
+
+Now we display the age distributions of females and males with varying educational levels. 
+```{r}
+nhanes_df |>
+  select(education, sex, age) |>
+  ggplot(aes(x = age, fill = sex)) +
+  geom_density(alpha = 0.5, na.rm = TRUE) +
+  facet_grid(~ education) +
+  viridis::scale_fill_viridis(discrete = TRUE) +
+  labs(
+    title = "Age distributions by sex and education",
+    x = "Age (years)",
+    y = "Density",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+```
+We see that older females more frequently completed high school equivalent compared to older males. 
+In addition, we see that younger females more frequently completed more than high school than younger females. The less than high school category is roughly similar. 
