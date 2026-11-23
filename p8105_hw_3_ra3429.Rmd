@@ -145,7 +145,7 @@ As expected, Tmax on average is higher than Tmin with a wider IQR. There are out
 
 For snowfall, the average snowfall appears to consistently be 25 mm with outliers in 1998 2006 and 2010. This is in context of limiting our data to only display snowfall from 0 to < 100 mm. 
 
-#Problem 2
+# Problem 2
 
 ## Data importa and tidying
 We merge the NHANES covars and accel data followed by excluding subjects < 21 years of age and anyone with missing demographic data. We convert sex and education to factor variables with relevant labeling which is more appropriate.
@@ -209,3 +209,65 @@ nhanes_df |>
 ```
 We see that older females more frequently completed high school equivalent compared to older males. 
 In addition, we see that younger females more frequently completed more than high school than younger females. The less than high school category is roughly similar. 
+
+## Plotting the total daily activity per individuals and educational group
+
+We want to determine the daily activity total by age, sex, and education level.
+
+First we create a new data frame with a total activity variable.Then, plot each total activity level vs age in each education group. 
+```{r}
+nhanes_df_total_activity = 
+  nhanes_df |>
+  mutate(
+    total_activity = rowSums(pick(starts_with("min")))
+  )
+nhanes_df_total_activity |>
+  ggplot(aes(x = age, y = total_activity, color = sex)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ education) +
+  labs(
+    title = "Daily activity total by age, sex, and education",
+    x = "Age (years)",
+    y = "Total daily activity (MIMS)",
+    color = "Sex"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+```
+We've displayed three plots. We see that in those with high school equivalent education, younger females seemed to be more active than younger males. As age increased, the two trends seem to converge and activity decreaes. In those who completed less than high school and more than high school educations, females and male activity decreased with increasing age. 
+
+## Plotting the trend in activity per each individual and educational group
+
+Now we will plot the trend in daily activity level per sex and educational group.Given the amount of datapoints, we will hide the individual datapoints and only display the fitted curve to understand the general trends. 
+
+```{r fig.width= 14}
+nhanes_df_24h_acitivty =
+  nhanes_df |>
+  pivot_longer(
+    cols = starts_with("min"),
+    names_to = "minute",
+    values_to = "activity"
+  )|>
+  mutate(
+    minute = readr::parse_number(minute)
+  ) |>
+  ggplot(aes(x = minute, y = activity, color = sex)) +
+  geom_point(alpha = 0) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~ education) +
+  labs(
+    title = "24-hr activity trend by sex, and education",
+    x = "Minute",
+    y = "MIMS",
+    color = "Sex"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+nhanes_df_24h_acitivty
+```
+
+We see that across all educational groups and both sexes, activity is low from 000 and rises around 0800h. Activity the decreases in the evening time. This is expected. 
+ 
