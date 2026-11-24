@@ -334,6 +334,9 @@ citi_df |>
   pivot_wider(
     names_from = member_casual,
     values_from = number_of_rides
+  ) |>
+  knitr::kable(
+    caption = "Number of Rides by Date and Rider Type"
   )
 ```
 
