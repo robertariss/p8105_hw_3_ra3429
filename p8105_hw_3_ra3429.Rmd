@@ -273,35 +273,86 @@ We see that across all educational groups and both sexes, activity is low from 0
 
 # Problem 3
 
+## Import and Clean Data
+
 First we import and clean the data. 
 
 ```{r}
 jan_2020_citi = 
   read.csv("./data/Jan 2020 Citi.csv") |>
   janitor::clean_names() |>
-  mutate(month = "2020-01")
+  mutate(date = "2020-01")
 
 jan_2024_citi = 
   read.csv("./data/Jan 2024 Citi.csv") |>
   janitor::clean_names() |>
-  mutate(month = "2024-01")
+  mutate(date = "2024-01")
 
 july_2020_citi = 
   read.csv("./data/July 2020 Citi.csv") |>
   janitor::clean_names() |>
-  mutate(month = "2020-07")
+  mutate(date = "2020-07")
 
 july_2024_citi = 
   read.csv("./data/July 2024 Citi.csv") |>
   janitor::clean_names() |>
-  mutate(month = "2024-07")
+  mutate(date = "2024-07")
 
 citi_df = 
   bind_rows(jan_2020_citi, july_2020_citi, jan_2024_citi, july_2024_citi) |>
   mutate(
-    rideable_type = factor(rideable_type)
-  )
-  
+    rideable_type = factor(rideable_type),
+    member_casual = factor(member_casual),
+    date = ym(date)
+  ) |>
+  relocate(ride_id, date, weekdays)
 ```
+We've now binded the ride information from all of the months. We created a tibble with a new variable date that represents what year and month of the ride. We converted rideable_type to a factor variable representing classic or electric rides. Also, member_casual is now a factor variable representing member or casual status. Reordered the varibles so that date and weekday are adjacent to ride_id. 
+
+Key variables: 
+* ride_id: ride ID
+* date: year and month of ride
+* weekdays: day of week of ride
+* duration: duration of ride in minutes
+* rideable_type: electric or classic bike
+* member_casual: citi bike member or casual 
+* start_station_name and end_station_name: start and end station name respecitvely. 
+
+Number of unique rides: `r citi_df |> summarize(n_distinct(ride_id))`
+
+Mean ride duration: `r citi_df |> summarize(mean(duration))` minutes
+
+## Reader Friendly Table Showing Total Numbers of Rides by Date and Separating Rider Type
+
+Now we create a table that shows the total number of rides by Date and Rider Type
+```{r}
+citi_df |>
+  group_by(date, member_casual) |>
+  summarise(
+    number_of_rides = n_distinct(ride_id, na.rm = TRUE)
+  )|>
+  pivot_wider(
+    names_from = member_casual,
+    values_from = number_of_rides
+  )
+```
+
+Here we see that there were more member rides than casual rides in all months included. Also, there is increasing casual and member rides overall with time. 
+
+The five most common starting points for rides:
+```{r}
+citi_df |>
+  group_by(start_station_name) |>
+  summarise(
+    number_of_rides = n_distinct(ride_id, na.rm = TRUE)
+  ) |>
+  arrange(desc(number_of_rides)) |>
+  head(5) |>
+  knitr::kable(
+    caption = "Five most popular starting stations"
+  )
+```
+
+
 
  
