@@ -401,6 +401,7 @@ We also see that median ride duration increased between in July compared to Janu
 
 ## Understanding the association of bike type with ride duration
 
+Creating a plot showing the association of bike type with ride duration including month and membership status
 ```{r}
 citi_df |>
   filter(date %in% c("2024-01", "2024-07")) |>
@@ -410,10 +411,12 @@ citi_df |>
   theme_minimal() +
   theme(legend.position = "bottom") +
   labs(
-    title = "Ride Duration by Month, Membership, and Bike Type in 2024",
+    title = "Ride Duration by Month, Member Status, and Bike Type in 2024",
     x = "Month",
     y = "Ride duration (minutes)",
-    fill = "Membership status"
+    fill = "Member Status"
   )
 ```
+
+
 Here we see that Electric Bikes had an apparent longer median duration in casual riders vs. members in both January and July of 2024. Among members, electric bikes appeared to have longer median ride duration in July 2024 vs. January 2024. In classic bikes, the median duration among members appeared similar in July vs. January 2024. 
